@@ -1,0 +1,1 @@
+export {MockDataMainPage as default} from "./ui";
