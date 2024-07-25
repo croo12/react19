@@ -1,6 +1,8 @@
 import fs from "node:fs/promises";
 import express from "express";
 import { ViteDevServer } from "vite";
+import cluster from "cluster";
+import { cpus } from "os";
 
 // Constants
 const isProduction = process.env.NODE_ENV === "production";
@@ -15,6 +17,17 @@ const ssrManifest = isProduction
 	? await fs.readFile("./dist/client/.vite/ssr-manifest.json", "utf-8")
 	: undefined;
 
+if (cluster.isPrimary) {
+	console.log(`Primary provess id: ${process.pid}`);
+
+	cpus().forEach(() => cluster.fork());
+
+	cluster.on("exit", (worker, code, signal) => {
+		console.log(`${worker.process.pid} worker exit`);
+		console.log("code", code, "signal", signal);
+	});
+}
+
 // Create http server
 const app = express();
 
@@ -28,6 +41,8 @@ if (!isProduction) {
 		base
 	});
 	app.use(vite.middlewares);
+} else {
+	console.log("짜잔");
 }
 
 // Serve HTML
@@ -36,18 +51,21 @@ app.use("*", async (req, res) => {
 		const url = req.originalUrl.replace(base, "");
 
 		let template: string;
-		let render: (arg0: string, arg1: string | undefined) => unknown;
+		let render: (
+			arg0: string,
+			arg1: string | undefined
+		) => { html: string; head?: string };
 		if (!isProduction) {
 			// Always read fresh template in development
 			template = await fs.readFile("./index.html", "utf-8");
 			template = await vite.transformIndexHtml(url, template);
-			render = (await vite.ssrLoadModule("/src/entry-server.jsx")).render;
+			render = (await vite.ssrLoadModule("/src/entry-server.tsx")).render;
 		} else {
 			template = templateHtml;
 			render = (await import("./dist/server/entry-server.js")).render;
 		}
 
-		const rendered = await render(url, ssrManifest);
+		const rendered = render(url, ssrManifest);
 
 		const html = template
 			.replace(`<!--app-head-->`, rendered.head ?? "")
