@@ -20,7 +20,10 @@ const ssrManifest = isProduction
 if (cluster.isPrimary) {
 	console.log(`Primary provess id: ${process.pid}`);
 
-	cpus().forEach(() => cluster.fork());
+	cpus().forEach((info, idx) => {
+		console.log(idx, info);
+		cluster.fork();
+	});
 
 	cluster.on("exit", (worker, code, signal) => {
 		console.log(`${worker.process.pid} worker exit`);
@@ -33,7 +36,7 @@ const app = express();
 
 // Add Vite or respective production middlewares
 let vite: ViteDevServer;
-if (!isProduction) {
+if (!isProduction && cluster.isPrimary) {
 	const { createServer } = await import("vite");
 	vite = await createServer({
 		server: { middlewareMode: true },
@@ -42,44 +45,46 @@ if (!isProduction) {
 	});
 	app.use(vite.middlewares);
 } else {
-	console.log("짜잔");
+	console.log("짜잔", cluster);
 }
 
-// Serve HTML
-app.use("*", async (req, res) => {
-	try {
-		const url = req.originalUrl.replace(base, "");
+if (cluster.isPrimary) {
+	// Serve HTML
+	app.use("*", async (req, res) => {
+		try {
+			const url = req.originalUrl.replace(base, "");
 
-		let template: string;
-		let render: (
-			arg0: string,
-			arg1: string | undefined
-		) => { html: string; head?: string };
-		if (!isProduction) {
-			// Always read fresh template in development
-			template = await fs.readFile("./index.html", "utf-8");
-			template = await vite.transformIndexHtml(url, template);
-			render = (await vite.ssrLoadModule("/src/entry-server.tsx")).render;
-		} else {
-			template = templateHtml;
-			render = (await import("./dist/server/entry-server.js")).render;
+			let template: string;
+			let render: (
+				arg0: string,
+				arg1: string | undefined
+			) => { html: string; head?: string };
+			if (!isProduction) {
+				// Always read fresh template in development
+				template = await fs.readFile("./index.html", "utf-8");
+				template = await vite.transformIndexHtml(url, template);
+				render = (await vite.ssrLoadModule("/src/entry-server.tsx")).render;
+			} else {
+				template = templateHtml;
+				render = (await import("./dist/server/entry-server.js")).render;
+			}
+
+			const rendered = render(url, ssrManifest);
+
+			const html = template
+				.replace(`<!--app-head-->`, rendered.head ?? "")
+				.replace(`<!--app-html-->`, rendered.html ?? "");
+
+			res.status(200).set({ "Content-Type": "text/html" }).send(html);
+		} catch (e) {
+			vite?.ssrFixStacktrace(e);
+			console.log(e.stack);
+			res.status(500).end(e.stack);
 		}
+	});
 
-		const rendered = render(url, ssrManifest);
-
-		const html = template
-			.replace(`<!--app-head-->`, rendered.head ?? "")
-			.replace(`<!--app-html-->`, rendered.html ?? "");
-
-		res.status(200).set({ "Content-Type": "text/html" }).send(html);
-	} catch (e) {
-		vite?.ssrFixStacktrace(e);
-		console.log(e.stack);
-		res.status(500).end(e.stack);
-	}
-});
-
-// Start http server
-app.listen(port, () => {
-	console.log(`Server started at http://localhost:${port}`);
-});
+	// Start http server
+	app.listen(port, () => {
+		console.log(`Server started at http://localhost:${port}`);
+	});
+}
