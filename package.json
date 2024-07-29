@@ -11,7 +11,9 @@
 		"preview": "cross-env NODE_ENV=production ts-node server"
 	},
 	"dependencies": {
+		"babel-plugin-react-compiler": "^0.0.0-experimental-334f00b-20240725",
 		"express": "^4.19.2",
+		"next": "^15.0.0-rc.0",
 		"react": "19.0.0-rc-f6cce072-20240723",
 		"react-dom": "19.0.0-rc-f6cce072-20240723"
 	},
