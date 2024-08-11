@@ -2,7 +2,7 @@ import fs from "node:fs/promises";
 import express from "express";
 import { ViteDevServer } from "vite";
 import cluster from "cluster";
-import { cpus } from "os";
+import { exec } from "node:child_process";
 
 // Constants
 const isProduction = process.env.NODE_ENV === "production";
@@ -18,12 +18,7 @@ const ssrManifest = isProduction
 	: undefined;
 
 if (cluster.isPrimary) {
-	console.log(`Primary provess id: ${process.pid}`);
-
-	cpus().forEach((info, idx) => {
-		console.log(idx, info);
-		cluster.fork();
-	});
+	console.log(`Primary process id: ${process.pid}`);
 
 	cluster.on("exit", (worker, code, signal) => {
 		console.log(`${worker.process.pid} worker exit`);
@@ -36,16 +31,19 @@ const app = express();
 
 // Add Vite or respective production middlewares
 let vite: ViteDevServer;
-if (!isProduction && cluster.isPrimary) {
-	const { createServer } = await import("vite");
-	vite = await createServer({
-		server: { middlewareMode: true },
-		appType: "custom",
-		base
-	});
-	app.use(vite.middlewares);
-} else {
-	console.log("짜잔", cluster);
+if (!isProduction) {
+	if (cluster.isPrimary) {
+		const { createServer } = await import("vite");
+		vite = await createServer({
+			server: { middlewareMode: true },
+			appType: "custom",
+			base
+		});
+		app.use(vite.middlewares);
+	} else {
+		// console.log("짜잔", cluster.);
+		console.log("!cluster.isPrimary === 암것도 안함 ㅅㄱ");
+	}
 }
 
 if (cluster.isPrimary) {
