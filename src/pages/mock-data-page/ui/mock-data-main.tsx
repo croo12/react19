@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { DataTypeCalculator, Type } from "../model/data-type-calculator";
+import { Card } from "../../../shared/ui";
 
 export const MockDataMainPage = () => {
 	const [value, setValue] = useState("");
@@ -35,11 +36,13 @@ export const MockDataMainPage = () => {
 					분석하기
 				</button>
 			</div>
-			<div>
-				{calculatedValue
-					? JSON.stringify(calculatedValue)
-					: "분석하기 버튼을 눌러주세요."}
-			</div>
+			<Card>
+				<code>
+					{calculatedValue
+						? JSON.stringify(calculatedValue)
+						: "분석하기 버튼을 눌러주세요."}
+				</code>
+			</Card>
 		</div>
 	);
 };
