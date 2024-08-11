@@ -2,7 +2,7 @@ type NullishType = "null" | "undefined";
 
 type PureType = "boolean" | "string" | "number" | "symbol" | "bigint";
 
-export type Type = NullishType | PureType | "array" | "object";
+type Type = NullishType | PureType | "array" | "object";
 
 interface BaseTypeObject {
 	type: Type;
@@ -34,7 +34,11 @@ interface ObjectTypeNode extends BaseTypeObject {
 	children: { [key: string | symbol | number]: BaseTypeObject };
 }
 
-type TypeNode = NullishTypeNode | PureTypeNode | ArrayTypeNode | ObjectTypeNode;
+export type TypeNode =
+	| NullishTypeNode
+	| PureTypeNode
+	| ArrayTypeNode
+	| ObjectTypeNode;
 
 export class DataTypeCalculator {
 	// #dataStructure: ObjectStruct = null!;

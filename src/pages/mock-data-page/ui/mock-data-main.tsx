@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { DataTypeCalculator, Type } from "../model/data-type-calculator";
+import { DataTypeCalculator, TypeNode } from "../model/data-type-calculator";
 import { Card } from "../../../shared/ui";
 
 export const MockDataMainPage = () => {
 	const [value, setValue] = useState("");
-	const [calculatedValue, setCalculatedValue] = useState<Type | null>(null);
+	const [calculatedValue, setCalculatedValue] = useState<TypeNode | null>(null);
 
 	return (
 		<div style={{ width: "100%" }}>
@@ -28,7 +28,7 @@ export const MockDataMainPage = () => {
 				/>
 				<button
 					onClick={() => {
-						const result = DataTypeCalculator.getType(JSON.parse(value));
+						const result = DataTypeCalculator.getType(JSON.parse(value), false);
 						console.log(result);
 						setCalculatedValue(result);
 					}}
