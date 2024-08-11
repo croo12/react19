@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { DataTypeCalculator, TypeNode } from "../model/data-type-calculator";
 import { Card } from "../../../shared/ui";
+import { displayTypeNode } from "../lib/display-type-node";
 
 export const MockDataMainPage = () => {
 	const [value, setValue] = useState("");
@@ -39,7 +40,7 @@ export const MockDataMainPage = () => {
 			<Card>
 				<code>
 					{calculatedValue
-						? JSON.stringify(calculatedValue)
+						? displayTypeNode(calculatedValue)
 						: "분석하기 버튼을 눌러주세요."}
 				</code>
 			</Card>

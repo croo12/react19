@@ -26,12 +26,12 @@ interface PureTypeNode extends BaseTypeObject {
 
 interface ArrayTypeNode extends BaseTypeObject {
 	type: "array";
-	children: BaseTypeObject[];
+	children: TypeNode[];
 }
 
 interface ObjectTypeNode extends BaseTypeObject {
 	type: "object";
-	children: { [key: string | symbol | number]: BaseTypeObject };
+	children: { [key: string | symbol | number]: TypeNode };
 }
 
 export type TypeNode =
