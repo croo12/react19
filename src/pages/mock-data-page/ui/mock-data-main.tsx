@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { DataTypeCalculator, TypeNode } from "../model/data-type-calculator";
-import { Card } from "../../../shared/ui";
+import { Card } from "@/shared/ui";
+import type { TypeNode } from "@/entities/type-node";
+import { DataTypeCalculator } from "@/entities/type-node";
 import { displayTypeNode } from "../lib/display-type-node";
 
 export const MockDataMainPage = () => {

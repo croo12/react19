@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import path from "path";
 
 // https://vitejs.dev/config/
 /** @type {import('vite').UserConfig} */
@@ -8,5 +9,10 @@ export default defineConfig({
 	server: {
 		port: parseInt(process.env.PORT ?? "5173"),
 		hmr: true
+	},
+	resolve: {
+		alias: {
+			"@": path.resolve(__dirname, "src")
+		}
 	}
 });
