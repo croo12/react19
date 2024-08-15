@@ -2,7 +2,13 @@ import fs from "node:fs/promises";
 import express from "express";
 import { ViteDevServer } from "vite";
 import cluster from "cluster";
-import { exec } from "node:child_process";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+console.log(__dirname);
 
 // Constants
 const isProduction = process.env.NODE_ENV === "production";
@@ -11,10 +17,10 @@ const base = process.env.BASE || "/";
 
 // Cached production assets
 const templateHtml = isProduction
-	? await fs.readFile("./dist/client/index.html", "utf-8")
+	? await fs.readFile("dist/client/index.html", "utf-8")
 	: "";
 const ssrManifest = isProduction
-	? await fs.readFile("./dist/client/.vite/ssr-manifest.json", "utf-8")
+	? await fs.readFile("dist/client/.vite/ssr-manifest.json", "utf-8")
 	: undefined;
 
 if (cluster.isPrimary) {
@@ -32,6 +38,8 @@ const app = express();
 // Add Vite or respective production middlewares
 let vite: ViteDevServer;
 if (!isProduction) {
+	console.log(`is Dev`);
+
 	if (cluster.isPrimary) {
 		const { createServer } = await import("vite");
 		vite = await createServer({
@@ -44,13 +52,31 @@ if (!isProduction) {
 		// console.log("짜잔", cluster.);
 		console.log("!cluster.isPrimary === 암것도 안함 ㅅㄱ");
 	}
+} else {
+	console.log(`is Production`);
 }
 
 if (cluster.isPrimary) {
+	if (isProduction) {
+		app.use("/dist", express.static(join(__dirname)));
+	}
+
 	// Serve HTML
-	app.use("*", async (req, res) => {
+	app.use("*", async (req, res, next) => {
+		// console.log(req);
+
 		try {
 			const url = req.originalUrl.replace(base, "");
+
+			if (
+				url.endsWith(".js") ||
+				url.endsWith(".css") ||
+				url.endsWith(".png") ||
+				url.endsWith(".jpg") ||
+				url.endsWith(".svg")
+			) {
+				return next();
+			}
 
 			let template: string;
 			let render: (

@@ -6,11 +6,11 @@
 	"scripts": {
 		"dev": "ts-node -r tsconfig-paths/register server.ts",
 		"build": "npm run build:entry && npm run build:client && npm run build:server",
-		"build:entry": "vite build --ssr server.ts --outDir dist",
-		"build:client": "vite build --ssrManifest --outDir dist/client",
-		"build:server": "vite build --ssr src/entry-server.tsx --outDir dist/server",
+		"build:entry": "vite build --ssr server.ts --base=dist --outDir dist",
+		"build:client": "vite build --ssrManifest --base=dist/client --outDir dist/client",
+		"build:server": "vite build --ssr src/entry-server.tsx --base=dist/server --outDir dist/server",
 		"preview": "cross-env NODE_ENV=production ts-node server",
-		"start:prod": "node dist/server.js"
+		"start:prod": "cross-env NODE_ENV=production node dist/server.js"
 	},
 	"dependencies": {
 		"express": "^4.19.2",
