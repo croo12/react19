@@ -68,16 +68,6 @@ if (cluster.isPrimary) {
 		try {
 			const url = req.originalUrl.replace(base, "");
 
-			if (
-				url.endsWith(".js") ||
-				url.endsWith(".css") ||
-				url.endsWith(".png") ||
-				url.endsWith(".jpg") ||
-				url.endsWith(".svg")
-			) {
-				return next();
-			}
-
 			let template: string;
 			let render: (
 				arg0: string,
