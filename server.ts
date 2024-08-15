@@ -64,7 +64,8 @@ if (cluster.isPrimary) {
 				render = (await vite.ssrLoadModule("/src/entry-server.tsx")).render;
 			} else {
 				template = templateHtml;
-				render = (await import("./dist/server/entry-server.js")).render;
+				const newLocal = "./server/entry-server.js";
+				render = (await import(newLocal)).render;
 			}
 
 			const rendered = render(url, ssrManifest);
@@ -75,9 +76,10 @@ if (cluster.isPrimary) {
 
 			res.status(200).set({ "Content-Type": "text/html" }).send(html);
 		} catch (e) {
-			vite?.ssrFixStacktrace(e);
-			console.log(e.stack);
-			res.status(500).end(e.stack);
+			const error = e as Error;
+			vite?.ssrFixStacktrace(error);
+			console.log(error.stack);
+			res.status(500).end(error.stack);
 		}
 	});
 

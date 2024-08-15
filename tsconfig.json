@@ -1,9 +1,9 @@
 {
 	"compilerOptions": {
-		"target": "ES6",
+		"target": "ES2022",
 		"module": "ESNext",
 		"outDir": "./dist",
-		"rootDir": "./src",
+		"rootDir": "./",
 		"strict": true,
 		"esModuleInterop": true,
 		"jsx": "react-jsx",
@@ -14,7 +14,7 @@
 			"@/*": ["./src/*"]
 		}
 	},
-	"include": ["src/**/*", "server"],
+	"include": ["src/**/*", "./server.ts"],
 	"ts-node": {
 		"transpileOnly": true,
 		"require": ["tsconfig-paths/register"],

@@ -14,5 +14,13 @@ export default defineConfig({
 		alias: {
 			"@": path.resolve(__dirname, "src")
 		}
+	},
+	esbuild: {
+		target: "esnext"
+	},
+	build: {
+		target: "esnext",
+		ssr: "server.ts",
+		outDir: "dist"
 	}
 });

@@ -5,7 +5,8 @@
 	"type": "module",
 	"scripts": {
 		"dev": "ts-node -r tsconfig-paths/register server.ts",
-		"build": "yarn build:client && yarn build:server",
+		"build": "yarn build:entry && yarn build:client && yarn build:server",
+		"build:entry": "vite build --ssr server.ts --outDir dist",
 		"build:client": "vite build --ssrManifest --outDir dist/client",
 		"build:server": "vite build --ssr src/entry-server.tsx --outDir dist/server",
 		"preview": "cross-env NODE_ENV=production ts-node server"
@@ -38,5 +39,8 @@
 	"overrides": {
 		"@types/react": "npm:types-react@rc",
 		"@types/react-dom": "npm:types-react-dom@rc"
+	},
+	"engines": {
+		"node": "^18.18.0"
 	}
 }
