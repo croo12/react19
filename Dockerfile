@@ -1,6 +1,7 @@
 FROM node:18.18
 WORKDIR /app
-ADD ./dist /app
+COPY package*.json ./
 RUN npm install
+RUN npm run build
 EXPOSE 5173
-CMD npm start
+CMD ["node", "dist/server.js"] 
