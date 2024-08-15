@@ -20,7 +20,6 @@ export default defineConfig({
 	},
 	build: {
 		target: "esnext",
-		ssr: "server.ts",
 		outDir: "dist"
 	}
 });
