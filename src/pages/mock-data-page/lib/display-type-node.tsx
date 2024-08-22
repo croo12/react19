@@ -1,4 +1,5 @@
 import type { TypeNode } from "@/entities/type-node";
+import { LeftPaddingBox } from "@/shared/ui";
 import { Fragment } from "react/jsx-runtime";
 
 export const displayTypeNode = (node: TypeNode): React.ReactNode => {
@@ -47,12 +48,14 @@ export const displayTypeNode = (node: TypeNode): React.ReactNode => {
 				<>
 					&#40;
 					<br />
-					{uniqueTypeArray.map((node, idx) => (
-						<Fragment key={idx}>
-							{node}&nbsp;&#124;
-							<br />
-						</Fragment>
-					))}
+					<LeftPaddingBox>
+						{uniqueTypeArray.map((node, idx) => (
+							<Fragment key={idx}>
+								{node}&nbsp;&#124;
+								<br />
+							</Fragment>
+						))}
+					</LeftPaddingBox>
 					&#41;&#91;&#93;
 				</>
 			);
@@ -63,15 +66,17 @@ export const displayTypeNode = (node: TypeNode): React.ReactNode => {
 				<>
 					&#123;
 					<br />
-					{Object.entries(node.children).map(([k, v], idx, arr) => {
-						return (
-							<Fragment key={k}>
-								{`${k}:`} {displayTypeNode(v)}
-								{idx !== arr.length - 1 ? ", " : ""}
-								<br />
-							</Fragment>
-						);
-					})}
+					<LeftPaddingBox>
+						{Object.entries(node.children).map(([k, v], idx, arr) => {
+							return (
+								<Fragment key={k}>
+									{`${k}:`} {displayTypeNode(v)}
+									{idx !== arr.length - 1 ? ", " : ""}
+									<br />
+								</Fragment>
+							);
+						})}
+					</LeftPaddingBox>
 					&#125;
 				</>
 			);
