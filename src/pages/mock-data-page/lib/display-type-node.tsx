@@ -1,4 +1,4 @@
-import type { TypeNode } from "@/entities/type-node";
+import type { TypeNode, UnionTypeNode } from "@/entities/type-node";
 import { LeftPaddingBox } from "@/shared/ui";
 import { Fragment } from "react/jsx-runtime";
 
@@ -11,24 +11,33 @@ export const displayTypeNode = (node: TypeNode): React.ReactNode => {
 		}
 		case "string":
 		case "number":
-		case "bigint":
-		case "boolean":
-		case "symbol": {
-			//is Pure
-			if (node.isConst) {
-				const str = node.value.toString();
-				return node.type === "string" ? `"${str}"` : str;
-			}
+		case "boolean": {
+			//isPrimitive
 			return node.type;
 		}
+		case "stringLiteral":
+		case "numberLiteral":
+		case "booleanLiteral": {
+			//isPrimitive
+			const val = node.value.toString();
+			return node.type === "stringLiteral" ? `"${val}"` : val;
+		}
+		case "bigint":
+		case "symbol": {
+			//is Pure
+			return node.type;
+		}
+		case "tuple":
 		case "array": {
 			const innerType = node.children.map((n) => displayTypeNode(n));
-			if (node.isConst) {
+			if (node.type === "tuple") {
 				return (
 					<div>
 						&#91;
 						<br />
-						{innerType.join(", ")}
+						{innerType.map((node) => (
+							<>{node},</>
+						))}
 						<br />
 						&#93;
 					</div>
@@ -81,5 +90,46 @@ export const displayTypeNode = (node: TypeNode): React.ReactNode => {
 				</>
 			);
 		}
+
+		case "union":
+			return diplayUnionType(node);
+
+		default:
+			return "Unknown Type";
 	}
+};
+
+const diplayUnionType = (node: UnionTypeNode) => {
+	const uniqueTypes = [
+		...new Set(node.children.map((child) => displayTypeNode(child)))
+	];
+
+	if (uniqueTypes.length === 0) {
+		return "never";
+	}
+
+	if (uniqueTypes.length === 1) {
+		return uniqueTypes[0];
+	}
+
+	return (
+		<>
+			{uniqueTypes.length > 1 && "("}
+			<br />
+			<LeftPaddingBox>
+				{uniqueTypes.map((typeString, idx) => (
+					<Fragment key={idx}>
+						{typeString}
+						{idx !== uniqueTypes.length - 1 && (
+							<>
+								&nbsp;|
+								<br />
+							</>
+						)}
+					</Fragment>
+				))}
+			</LeftPaddingBox>
+			{uniqueTypes.length > 1 && ")"}
+		</>
+	);
 };

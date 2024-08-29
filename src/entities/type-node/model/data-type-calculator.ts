@@ -1,44 +1,15 @@
-type NullishType = "null" | "undefined";
-
-type PureType = "boolean" | "string" | "number" | "symbol" | "bigint";
-
-type Type = NullishType | PureType | "array" | "object";
-
-interface BaseTypeObject {
-	type: Type;
-	isConst: boolean;
-	value: any;
-	children:
-		| BaseTypeObject[]
-		| { [key: string | symbol | number]: BaseTypeObject }
-		| null;
-}
-
-interface NullishTypeNode extends BaseTypeObject {
-	type: NullishType;
-	children: null;
-}
-
-interface PureTypeNode extends BaseTypeObject {
-	type: PureType;
-	children: null;
-}
-
-interface ArrayTypeNode extends BaseTypeObject {
-	type: "array";
-	children: TypeNode[];
-}
-
-interface ObjectTypeNode extends BaseTypeObject {
-	type: "object";
-	children: { [key: string | symbol | number]: TypeNode };
-}
-
-export type TypeNode =
-	| NullishTypeNode
-	| PureTypeNode
-	| ArrayTypeNode
-	| ObjectTypeNode;
+import { getArrayOrTupleType } from "../lib";
+import { getLiteralOrPrimitiveType } from "../lib/get-literal-or-primitive-type";
+import { getNullishType } from "../lib/get-nullish-type";
+import { getObjectType } from "../lib/get-object-type";
+import { getPureType } from "../lib/get-pure-type";
+import {
+	ArrayTypeNode,
+	NullishTypeNode,
+	ObjectTypeNode,
+	PrimitiveTypeNode,
+	TypeNode
+} from "../types";
 
 export class DataTypeCalculator {
 	// #dataStructure: ObjectStruct = null!;
@@ -49,91 +20,30 @@ export class DataTypeCalculator {
 	// }
 
 	static getType(value: unknown, isConst: boolean): TypeNode {
-		if (value === null) {
-			return {
-				type: "null",
-				value,
-				isConst,
-				children: null
-			} satisfies NullishTypeNode;
+		if (value === null || typeof value === "undefined") {
+			return getNullishType(value, isConst);
 		}
 
-		if (typeof value === "undefined") {
-			return {
-				type: "undefined",
-				value,
-				isConst,
-				children: null
-			} satisfies NullishTypeNode;
+		if (
+			typeof value === "number" ||
+			typeof value === "string" ||
+			typeof value === "boolean"
+		) {
+			return getLiteralOrPrimitiveType(value, isConst);
 		}
 
-		if (typeof value === "number") {
-			return {
-				type: "number",
-				value,
-				isConst,
-				children: null
-			} satisfies PureTypeNode;
-		}
-
-		if (typeof value === "string") {
-			return {
-				type: "string",
-				value,
-				isConst,
-				children: null
-			} satisfies PureTypeNode;
-		}
-
-		if (typeof value === "boolean") {
-			return {
-				type: "boolean",
-				value,
-				isConst,
-				children: null
-			} satisfies PureTypeNode;
-		}
-
-		if (typeof value === "symbol") {
-			return {
-				type: "symbol",
-				value,
-				isConst,
-				children: null
-			} satisfies PureTypeNode;
-		}
-
-		if (typeof value === "bigint") {
-			return {
-				type: "bigint",
-				value,
-				isConst,
-				children: null
-			} satisfies PureTypeNode;
+		if (typeof value === "symbol" || typeof value === "bigint") {
+			return getPureType(value, isConst);
 		}
 
 		if (Array.isArray(value)) {
-			const innerTypeArray = value.map((v) => this.getType(v, isConst));
-
-			return {
-				type: "array",
-				value,
-				isConst,
-				children: innerTypeArray
-			} satisfies ArrayTypeNode;
+			return getArrayOrTupleType(value, isConst);
 		}
 
-		const innerTypeObject: Record<string | number | symbol, TypeNode> = {};
+		if (typeof value === "object") {
+			return getObjectType(value, isConst);
+		}
 
-		Object.entries(value).forEach(([k, v]) => {
-			innerTypeObject[k] = this.getType(v, isConst);
-		});
-
-		return {
-			type: "object",
-			value,
-			isConst,
-			children: innerTypeObject
-		} satisfies ObjectTypeNode;
+		throw new Error("uns Type, value: " + value);
 	}
 }
