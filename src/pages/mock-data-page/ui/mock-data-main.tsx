@@ -3,8 +3,12 @@ import { Card } from "@/shared/ui";
 
 type Log = { input: string; output: string; createdAt: Date };
 
+const NODE_END_POINT = import.meta.env.NODE_END_POINT;
+
+console.log(NODE_END_POINT);
+
 const getLogs = async (callback: (log: Log[]) => void) => {
-	const response = await fetch("http://localhost:5173/log", {
+	const response = await fetch(`${NODE_END_POINT}/log`, {
 		method: "GET",
 		headers: {
 			"Content-Type": "application/json"
@@ -30,7 +34,7 @@ export const MockDataMainPage = () => {
 		try {
 			// setExtractedType("");
 
-			const response = await fetch("http://localhost:5173/extract-type", {
+			const response = await fetch(`${NODE_END_POINT}/extract-type`, {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json"
