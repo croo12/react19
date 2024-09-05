@@ -6,7 +6,31 @@ import { displayTypeNode } from "../lib/display-type-node";
 
 export const MockDataMainPage = () => {
 	const [value, setValue] = useState("");
-	const [calculatedValue, setCalculatedValue] = useState<TypeNode | null>(null);
+	const [calculatedValue, setCalculatedValue] = useState<string | null>(null);
+
+	const extractType = async (jsonValue: string) => {
+		try {
+			// setExtractedType("");
+
+			const response = await fetch("http://localhost:5173/extract-type", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json"
+				},
+				body: JSON.stringify({ jsonContent: jsonValue })
+			});
+
+			if (!response.ok) {
+				throw new Error("Failed to extract type");
+			}
+
+			const data = await response.json();
+			setCalculatedValue(data.type);
+			console.log(data);
+		} catch (err) {
+			console.error("Error extracting type: ", err);
+		}
+	};
 
 	return (
 		<div style={{ width: "100%" }}>
@@ -30,9 +54,11 @@ export const MockDataMainPage = () => {
 				/>
 				<button
 					onClick={() => {
-						const result = DataTypeCalculator.getType(JSON.parse(value), false);
-						console.log(result);
-						setCalculatedValue(result);
+						// const result = DataTypeCalculator.getType(JSON.parse(value), false);
+						// console.log(result);
+						// setCalculatedValue(result);
+
+						extractType(value);
 					}}
 				>
 					분석하기
@@ -40,9 +66,7 @@ export const MockDataMainPage = () => {
 			</div>
 			<Card>
 				<code>
-					{calculatedValue
-						? displayTypeNode(calculatedValue)
-						: "분석하기 버튼을 눌러주세요."}
+					{calculatedValue ? calculatedValue : "분석하기 버튼을 눌러주세요."}
 				</code>
 			</Card>
 		</div>

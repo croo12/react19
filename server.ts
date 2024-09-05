@@ -1,9 +1,11 @@
 import fs from "node:fs/promises";
 import express from "express";
+import cors from "cors";
 import { ViteDevServer } from "vite";
 import cluster from "cluster";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { extractTypeFromJSON } from "./src/server";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -60,6 +62,25 @@ if (cluster.isPrimary) {
 	if (isProduction) {
 		app.use("/dist", express.static(join(__dirname)));
 	}
+
+	app.use(cors());
+	app.use(express.json());
+
+	// Add type extraction endpoint
+	app.post("/extract-type", (req, res) => {
+		try {
+			const { jsonContent } = req.body;
+			if (!jsonContent) {
+				return res.status(400).json({ error: "JSON content is required" });
+			}
+
+			const extractedType = extractTypeFromJSON(jsonContent);
+			res.json({ type: extractedType });
+		} catch (error) {
+			console.error("Error extracting type:", error);
+			res.status(500).json({ error: "Failed to extract type" });
+		}
+	});
 
 	// Serve HTML
 	app.use("*", async (req, res, next) => {

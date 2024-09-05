@@ -10,14 +10,14 @@
 		"moduleResolution": "Node",
 		"baseUrl": ".",
 		"paths": {
-			"@": ["./src"],
-			"@/*": ["./src/*"]
+			"@/*": ["src/*"]
 		}
 	},
-	"include": ["src/**/*", "./server.ts"],
+	"include": ["src/**/*", "server.ts"],
 	"ts-node": {
 		"transpileOnly": true,
 		"require": ["tsconfig-paths/register"],
-		"esm": true
+		"esm": true,
+		"experimentalSpecifierResolution": "node"
 	}
 }
