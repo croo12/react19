@@ -1,12 +1,30 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card } from "@/shared/ui";
-import type { TypeNode } from "@/entities/type-node";
-import { DataTypeCalculator } from "@/entities/type-node";
-import { displayTypeNode } from "../lib/display-type-node";
+
+type Log = { input: string; output: string; createdAt: Date };
+
+const getLogs = async (callback: (log: Log[]) => void) => {
+	const response = await fetch("http://localhost:5173/log", {
+		method: "GET",
+		headers: {
+			"Content-Type": "application/json"
+		}
+	});
+
+	const data = await response.json();
+
+	callback(data.log);
+};
 
 export const MockDataMainPage = () => {
 	const [value, setValue] = useState("");
 	const [calculatedValue, setCalculatedValue] = useState<string | null>(null);
+
+	const [logs, setLogs] = useState<Log[]>([]);
+
+	useEffect(() => {
+		getLogs(setLogs);
+	}, []);
 
 	const extractType = async (jsonValue: string) => {
 		try {
@@ -27,6 +45,7 @@ export const MockDataMainPage = () => {
 			const data = await response.json();
 			setCalculatedValue(data.type);
 			console.log(data);
+			getLogs(setLogs);
 		} catch (err) {
 			console.error("Error extracting type: ", err);
 		}
@@ -69,6 +88,16 @@ export const MockDataMainPage = () => {
 					{calculatedValue ? calculatedValue : "분석하기 버튼을 눌러주세요."}
 				</code>
 			</Card>
+			{logs.length > 0 &&
+				logs.map((log, index) => (
+					<div
+						key={index}
+						style={{ display: "flex", flexDirection: "column", gap: "8px" }}
+					>
+						<code>{log.input}</code>
+						<code>{log.output}</code>
+					</div>
+				))}
 		</div>
 	);
 };

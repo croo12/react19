@@ -6,6 +6,12 @@ import cluster from "cluster";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { extractTypeFromJSON } from "./src/server";
+import {
+	getLogList,
+	insertLog,
+	connectDb,
+	closeConnection
+} from "./src/shared/db";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -66,6 +72,21 @@ if (cluster.isPrimary) {
 	app.use(cors());
 	app.use(express.json());
 
+	app.get("/log", async (req, res) => {
+		try {
+			const result = await getLogList();
+
+			if (result?.length === 0) {
+				return res.status(204).json({ log: [] });
+			}
+
+			return res.status(200).json({ log: result });
+		} catch (error) {
+			console.error("Fail to get log:", error);
+			res.status(500).json({ error: "Failed to get Logs" });
+		}
+	});
+
 	// Add type extraction endpoint
 	app.post("/extract-type", (req, res) => {
 		try {
@@ -75,6 +96,12 @@ if (cluster.isPrimary) {
 			}
 
 			const extractedType = extractTypeFromJSON(jsonContent);
+
+			insertLog({
+				input: jsonContent,
+				output: extractedType
+			});
+
 			res.json({ type: extractedType });
 		} catch (error) {
 			console.error("Error extracting type:", error);
@@ -123,5 +150,10 @@ if (cluster.isPrimary) {
 	// Start http server
 	app.listen(port, () => {
 		console.log(`Server started at http://localhost:${port}`);
+		connectDb();
+	});
+
+	process.on("close", () => {
+		closeConnection();
 	});
 }

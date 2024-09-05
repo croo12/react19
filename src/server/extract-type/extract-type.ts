@@ -58,10 +58,18 @@ export function extractTypeFromJSON(jsonContent: string): string {
 	const result = typeChecker.typeToString(
 		type,
 		undefined,
-		ts.TypeFormatFlags.NoTruncation
+		ts.TypeFormatFlags.NoTruncation |
+			ts.TypeFormatFlags.WriteArrayAsGenericType |
+			ts.TypeFormatFlags.UseAliasDefinedOutsideCurrentScope |
+			ts.TypeFormatFlags.AddUndefined |
+			ts.TypeFormatFlags.InTypeAlias |
+			ts.TypeFormatFlags.MultilineObjectLiterals |
+			ts.TypeFormatFlags.WriteClassExpressionAsTypeLiteral
 	);
-
 	console.log(result);
+
+	const anotherResult = generateTypeDefinition(type, typeChecker);
+	console.log(anotherResult);
 
 	const formattedResult = result.replace(/\\u[\dA-F]{4}/gi, (match) => {
 		return String.fromCharCode(parseInt(match.replace(/\\u/g, ""), 16));
@@ -71,41 +79,6 @@ export function extractTypeFromJSON(jsonContent: string): string {
 
 	return formattedResult;
 }
-
-// // Type extraction function
-// function extractTypeFromJSON(jsonString: string): string {
-//   const jsonObject = JSON.parse(jsonString);
-
-//   const compilerOptions: ts.CompilerOptions = {
-//     target: ts.ScriptTarget.ES2022,
-//     module: ts.ModuleKind.ESNext,
-//     strict: true,
-//   };
-
-//   const sourceFile = ts.createSourceFile(
-//     'temp.ts',
-//     `const data = ${JSON.stringify(jsonObject)} as const;`,
-//     ts.ScriptTarget.ES2022
-//   );
-
-//   const host = ts.createCompilerHost(compilerOptions);
-//   const program = ts.createProgram([sourceFile.fileName], compilerOptions, host);
-//   const typeChecker = program.getTypeChecker();
-
-//   const dataDeclaration = sourceFile.statements.find(
-//     (statement): statement is ts.VariableStatement =>
-//       ts.isVariableStatement(statement) &&
-//       statement.declarationList.declarations[0].name.getText() === 'data'
-//   );
-
-//   if (dataDeclaration) {
-//     const declaration = dataDeclaration.declarationList.declarations[0];
-//     const type = typeChecker.getTypeAtLocation(declaration);
-//     return typeChecker.typeToString(type, undefined, ts.TypeFormatFlags.NoTruncation);
-//   }
-
-//   return 'Type not found';
-// }
 
 function generateTypeDefinition(
 	type: ts.Type,
