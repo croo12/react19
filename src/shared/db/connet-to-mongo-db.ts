@@ -71,6 +71,7 @@ export async function connectDb() {
 			"Pinged your deployment. You successfully connected to MongoDB!"
 		);
 	} catch (error) {
+		console.error("FAILED TO CONNECT MONGO DB");
 		console.error(error);
 		// Ensures that the client will close when you finish/error
 		await client.close();

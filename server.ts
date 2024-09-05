@@ -13,6 +13,8 @@ import {
 	closeConnection
 } from "./src/shared/db";
 
+export const endpoint = process.env.NODE_END_POINT || "http://localhost:5173";
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
